@@ -3,7 +3,7 @@
 import os
 from flask import Flask, render_template, session, redirect, url_for, flash
 from flask_script import Manager, Shell
-from flask_moment import Moment # needs pip/pip3 install flask_moment
+# from flask_moment import Moment # needs pip/pip3 install flask_moment
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
