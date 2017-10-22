@@ -28,7 +28,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Set up Flask debug stuff
 manager = Manager(app)
-moment = Moment(app) # For time
+# moment = Moment(app) # For time # Later
 db = SQLAlchemy(app) # For database use
 # migrate = Migrate(app, db) # For database use # later
 
@@ -56,6 +56,8 @@ class MovieForm(FlaskForm):
     submit = SubmitField('Submit')
 
 ##### Helper functions
+
+### For database additions / get_or_create
 def get_or_create_movie(db_session, movie_title, movie_genre):
     movie = db_session.query(Movie).filter_by(title=movie_title, genre=movie_genre).first()
     if movie:
@@ -101,3 +103,4 @@ def see_all():
 if __name__ == '__main__':
     db.create_all()
     manager.run() # NEW: run with this: python main_app.py runserver
+    # Also provides more tools for debugging
