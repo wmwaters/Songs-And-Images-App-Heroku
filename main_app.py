@@ -42,43 +42,29 @@ class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64),unique=True) # Only unique title movies
     #person = db.relationship('Person',backref='person')
+    genre = db.Column(db.String(64))
 
     def __repr__(self):
         return "{} | {}".format(self.title, self.genre)
 
-class Person(db.Model):
-    id = db.Column(db.Integer,primary_key=True)
-    name = db.Column(db.String(64), unique=True, index=True)
-    # favMovie = db.relation(db.Integer, db.ForeignKey('movie.id')) # should this be a db.relationship to propagate to Movie?
-
-
-
 ##### Set up Forms #####
 
-class NameMovieForm(FlaskForm):
-    name = StringField("What is the person's name?", validators=[Required()])
-    favMovie = StringField("What is the title of their favorite movie?", validators=[Required()])
+class MovieForm(FlaskForm):
+    favMovie = StringField("What is the title of your favorite movie?", validators=[Required()])
+    genre = StringField("What is the genre of that movie?", validators
+        =[Required()])
     submit = SubmitField('Submit')
 
 ##### Helper functions
-# def get_or_create_instrument(session, serial_number):
-#     instrument = session.query(Instrument).filter_by(serial_number=serial_number).first()
-#     if instrument:
-#         return instrument
-#     else:
-#         instrument = Instrument(serial_number)
-#         session.add(instrument)
-#         return instrument
-
-def get_or_create_person(db_session, person_name):#, fav_movie_title):
-    person = db_session.query(Person).filter_by(name=person_name).first()
-    if person:
-        return person
+def get_or_create_movie(db_session, movie_title, movie_genre):
+    movie = db_session.query(Movie).filter_by(title=movie_title, genre=movie_genre).first()
+    if movie:
+        return movie
     else:
-        person = Person(name=person_name)
-        db_session.add(person)
+        movie = Movie(title=movie_title,genre=movie_genre)
+        db_session.add(movie)
         db_session.commit()
-        return person
+        return movie
 
 
 ##### Set up Controllers (view functions) #####
@@ -97,60 +83,21 @@ def internal_server_error(e):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # curr_people = Person.query.all()
-    # num_people = len(curr_people)
-    num_people = 0
-    form = NameMovieForm()
+    form = MovieForm()
     if form.validate_on_submit():
-        get_or_create_person(db.session,form.name.data)
-        # New person:
-            # Add person and their fav movie
-
-        # Extant person:
-            # Change person's fav movie
-
-        ## Q: What happens with a uniqueness error for movies -- does it update or not do anything, or is it gonna be a problem? May as well try the conservative way.
-
-
-
-        # people_with_name = Person.query.filter_by(name=form.name.data)
-        # if len(people_with_name) < 1:
-        #     movie = Movie(title=form.favMovie.data)
-        #     db.session.add(movie)
-        #     db.session.commit()
-        #     mv = Movie.query.filter_by(title=form.favMovie.data)
-        #     id_new = mv.first().id
-        #     person = Person(name=form.name.data,favMovie=id_new)
-        #     db.session.add(person)
-        #     db.session.commit()
-        # else:
-        #     # Just change their fav movie
-        #     movies_like = Movie.query.filter_by(title=form.favMovie.data)
-        #     if not movies_like: 
-        #         movie = Movie(title=form.favMovie.data)
-        #         db.session.add(movie)
-        #         db.session.commit()
-        #     movie = Movie.query.filter_by(title=form.favMovie.data)
-        #     id_new = movie.first().id
-        #     person = Person(name=form.name.data,favMovie=id_new)
-        #     db.session.add(person)
-        #     db.session.commit()
-        #     flash("Movie changed!")
-        return redirect(url_for('index')) # tpl
-    return render_template('index.html', form=form,num_people=num_people) # Template should show e.g. "There are currently <NUM> ppl whose fav movies are stored!"
+        movie = get_or_create_movie(db.session,form.favMovie.data, form.genre.data)
+        return redirect(url_for('see_all'))
+    return render_template('index.html', form=form) 
 
 @app.route('/all_movies')
 def see_all():
-    ppl_n_movies = [] # to be list of tuples
-    ppl = Person.query.all()
-    for person in ppl:
-        movie = Movie.query.filter_by(id=person.favMovie)
-        ppl_n_movies.append((person,movie)) # list of tuples
-    return render_template('all_movies.html',people_and_movies=ppl_n_movies)
+    all_movies = [] # To be tuple list of title, genre
+    movies = Movie.query.all()
+    for m in movies:
+        all_movies.append((m.title,m.genre))
+    return render_template('all_movies.html',all_movies=all_movies)
 
 
 if __name__ == '__main__':
-    db.drop_all() # to start over FOR NOW
-    db.create_all() # create tables 
-    # if want to change data, have to drop tables
-    manager.run()
+    db.create_all()
+    manager.run() # NEW: run with this: python main_app.py runserver
