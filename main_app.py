@@ -59,14 +59,14 @@ class MovieForm(FlaskForm):
 
 ### For database additions / get_or_create
 def get_or_create_movie(db_session, movie_title, movie_genre):
-    movie = db_session.query(Movie).filter_by(title=movie_title, genre=movie_genre).first()
+    movie = db_session.query(Movie).filter_by(title=movie_title).first()
     if movie:
-        return movie
+        return movie, True
     else:
         movie = Movie(title=movie_title,genre=movie_genre)
         db_session.add(movie)
         db_session.commit()
-        return movie
+        return movie, False
 
 
 ##### Set up Controllers (view functions) #####
@@ -85,11 +85,16 @@ def internal_server_error(e):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    movies = Movie.query.all()
+    num_movies = len(movies)
     form = MovieForm()
     if form.validate_on_submit():
-        movie = get_or_create_movie(db.session,form.favMovie.data, form.genre.data)
+        movie_set = get_or_create_movie(db.session,form.favMovie.data, form.genre.data)
+        movie = movie_set[0]
+        if movie_set[1] is True:
+            flash("You've already saved that movie!")
         return redirect(url_for('see_all'))
-    return render_template('index.html', form=form) 
+    return render_template('index.html', form=form,num_movies=num_movies) 
 
 @app.route('/all_movies')
 def see_all():

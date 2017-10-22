@@ -1,6 +1,7 @@
 
 <div class="page-header">
-    <h1>{% if num_people %}{{ num_people }}{% else %}0{% endif %} people's favorite movies saved.</h1>
+    <h1>{% if num_movies %}{{ num_movies }}{% else %}0{% endif %} movies saved. </h1>
+    <p><a href="{{ url_for('see_all') }}">See all movies.</a></p>
 </div>
 
 <form method="POST"> 
@@ -10,6 +11,8 @@
 	{{ form.submit() }} 
 </form> 
 
+<div>
 {% for message in get_flashed_messages() %} 
-<div class =" alert alert-warning" > < button type =" button" class =" close" data-dismiss =" alert" >& times;</ button > {{ message }} </ div > 
+{{ message }}
 {% endfor %}
+</div>
