@@ -1,0 +1,15 @@
+
+<div class="page-header">
+    <h1>{% if num_people %}{{ num_people }}{% else %}0{% endif %} people's favorite movies saved.</h1>
+</div>
+
+<form method="POST"> 
+	{{ form.hidden_tag() }} 
+	{{ form.favMovie.label }} {{ form.favMovie() }} 
+	{{form.genre.label }} {{ form.genre() }}
+	{{ form.submit() }} 
+</form> 
+
+{% for message in get_flashed_messages() %} 
+<div class =" alert alert-warning" > < button type =" button" class =" close" data-dismiss =" alert" >& times;</ button > {{ message }} </ div > 
+{% endfor %}
