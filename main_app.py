@@ -92,7 +92,7 @@ def index():
     if form.validate_on_submit():
         if db.session.query(Song).filter_by(title=form.song.data).first(): # If there's already a song with that title, though...
             flash("You've already saved a song with that title!")
-        song = get_or_create_song(db.session,form.song.data, form.artist.data, form.genre.data)
+        get_or_create_song(db.session,form.song.data, form.artist.data, form.genre.data)
     # if song_set[1] is True:
         return redirect(url_for('see_all'))
     return render_template('index.html', form=form,num_songs=num_songs) 
