@@ -1,4 +1,4 @@
-# An application about recording favorite movies & info
+# An application about recording favorite songs & info
 
 import os
 from flask import Flask, render_template, session, redirect, url_for, flash
@@ -38,10 +38,9 @@ db = SQLAlchemy(app) # For database use
 
 ##### Set up Models #####
 
-class Movie(db.Model):
+class Song(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(64),unique=True) # Only unique title movies
-    #person = db.relationship('Person',backref='person')
+    title = db.Column(db.String(64),unique=True) # Only unique title songs
     genre = db.Column(db.String(64))
 
     def __repr__(self):
@@ -49,24 +48,25 @@ class Movie(db.Model):
 
 ##### Set up Forms #####
 
-class MovieForm(FlaskForm):
-    favMovie = StringField("What is the title of your favorite movie?", validators=[Required()])
-    genre = StringField("What is the genre of that movie?", validators
+class SongForm(FlaskForm):
+    song = StringField("What is the title of your favorite song?", validators=[Required()])
+    artist = StringField("What is the name of the artist who performs it?",validators=[Required()])
+    genre = StringField("What is the genre of that song?", validators
         =[Required()])
     submit = SubmitField('Submit')
 
 ##### Helper functions
 
 ### For database additions / get_or_create
-def get_or_create_movie(db_session, movie_title, movie_genre):
-    movie = db_session.query(Movie).filter_by(title=movie_title).first()
-    if movie:
-        return movie, True
+def get_or_create_song(db_session, song_title, song_artist, song_genre):
+    song = db_session.query(Song).filter_by(title=song_title).first()
+    if song:
+        return song, True
     else:
-        movie = Movie(title=movie_title,genre=movie_genre)
-        db_session.add(movie)
+        song = Song(title=song_title,artist=song_artist,genre=song_genre)
+        db_session.add(song)
         db_session.commit()
-        return movie, False
+        return song, False
 
 
 ##### Set up Controllers (view functions) #####
@@ -85,24 +85,24 @@ def internal_server_error(e):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    movies = Movie.query.all()
-    num_movies = len(movies)
-    form = MovieForm()
+    songs = Song.query.all()
+    num_songs = len(songs)
+    form = SongForm()
     if form.validate_on_submit():
-        movie_set = get_or_create_movie(db.session,form.favMovie.data, form.genre.data)
-        movie = movie_set[0]
-        if movie_set[1] is True:
-            flash("You've already saved that movie!")
+        song_set = get_or_create_song(db.session,form.song.data, form.artist.data, form.genre.data)
+        song = song_set[0]
+        if song_set[1] is True:
+            flash("You've already saved a song with that title!")
         return redirect(url_for('see_all'))
-    return render_template('index.html', form=form,num_movies=num_movies) 
+    return render_template('index.html', form=form,num_songs=num_songs) 
 
-@app.route('/all_movies')
+@app.route('/all_songs')
 def see_all():
-    all_movies = [] # To be tuple list of title, genre
-    movies = Movie.query.all()
-    for m in movies:
-        all_movies.append((m.title,m.genre))
-    return render_template('all_movies.html',all_movies=all_movies)
+    all_songs = [] # To be tuple list of title, genre
+    songs = Song.query.all()
+    for s in songs:
+        all_songs.append((s.title,s.artist, s.genre))
+    return render_template('all_songs.html',all_songs=all_songs)
 
 
 if __name__ == '__main__':
