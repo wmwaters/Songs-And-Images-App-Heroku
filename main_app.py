@@ -41,10 +41,11 @@ db = SQLAlchemy(app) # For database use
 class Song(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64),unique=True) # Only unique title songs
+    artist = db.Column(db.String(64))
     genre = db.Column(db.String(64))
 
     def __repr__(self):
-        return "{} | {}".format(self.title, self.genre)
+        return "{} by {} | {}".format(self.title,self.artist, self.genre)
 
 ##### Set up Forms #####
 
@@ -61,12 +62,12 @@ class SongForm(FlaskForm):
 def get_or_create_song(db_session, song_title, song_artist, song_genre):
     song = db_session.query(Song).filter_by(title=song_title).first()
     if song:
-        return song, True
+        return song
     else:
         song = Song(title=song_title,artist=song_artist,genre=song_genre)
         db_session.add(song)
         db_session.commit()
-        return song, False
+        return song
 
 
 ##### Set up Controllers (view functions) #####
@@ -89,10 +90,10 @@ def index():
     num_songs = len(songs)
     form = SongForm()
     if form.validate_on_submit():
-        song_set = get_or_create_song(db.session,form.song.data, form.artist.data, form.genre.data)
-        song = song_set[0]
-        if song_set[1] is True:
+        if db.session.query(Song).filter_by(title=form.song.data).first(): # If there's already a song with that title, though...
             flash("You've already saved a song with that title!")
+        song = get_or_create_song(db.session,form.song.data, form.artist.data, form.genre.data)
+    # if song_set[1] is True:
         return redirect(url_for('see_all'))
     return render_template('index.html', form=form,num_songs=num_songs) 
 
