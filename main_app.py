@@ -1,14 +1,20 @@
 # An application about recording favorite songs & info
 
+# 1:Many relationship: Album:Song(s)
+# Many:Many relationship: Artists:Songs
+# TODO: E-R diagram to display
+# TODO: relationship to build
+# TODO: relationship and association table to build
+
 import os
 from flask import Flask, render_template, session, redirect, url_for, flash
 from flask_script import Manager, Shell
-# from flask_moment import Moment # needs pip/pip3 install flask_moment
+# from flask_moment import Moment # requires pip/pip3 install flask_moment
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
 from flask_sqlalchemy import SQLAlchemy
-## maybe not next two
+
 # from flask_sqlalchemy import Table, Column, Integer, ForeignKey, String, DateTime, Date, Time
 # from flask_sqlalchemy import relationship, backref
 
@@ -32,8 +38,16 @@ manager = Manager(app)
 db = SQLAlchemy(app) # For database use
 # migrate = Migrate(app, db) # For database use # later
 
+## Set up Shell context so it's easy to use the shell to debug
+# Define function
+def make_shell_context():
+    return dict( app=app, db=db, User=User, Role=Role)
+# Add function use to manager
+manager.add_command("shell", Shell(make_context=make_shell_context))
+
+
 #########
-######### Everything above this line is important setup, not problem-solving.
+######### Everything above this line is important/useful setup, not problem-solving.
 #########
 
 ##### Set up Models #####
@@ -93,9 +107,8 @@ def index():
         if db.session.query(Song).filter_by(title=form.song.data).first(): # If there's already a song with that title, though...
             flash("You've already saved a song with that title!")
         get_or_create_song(db.session,form.song.data, form.artist.data, form.genre.data)
-    # if song_set[1] is True:
         return redirect(url_for('see_all'))
-    return render_template('index.html', form=form,num_songs=num_songs) 
+    return render_template('index.html', form=form,num_songs=num_songs)
 
 @app.route('/all_songs')
 def see_all():
