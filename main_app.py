@@ -17,7 +17,7 @@ from flask_sqlalchemy import SQLAlchemy
 # from flask_sqlalchemy import Table, Column, Integer, ForeignKey, String, DateTime, Date, Time
 # from flask_sqlalchemy import relationship, backref
 
-from flask.ext.migrate import Migrate, MigrateCommand # needs: pip/pip3 install flask_migrate
+from flask_migrate import Migrate, MigrateCommand # needs: pip/pip3 install flask-migrate
 
 # Configure base directory of app
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -41,7 +41,7 @@ manager.add_command('db', MigrateCommand) # Add migrate command to manager
 ## Set up Shell context so it's easy to use the shell to debug
 # Define function
 def make_shell_context():
-    return dict( app=app, db=db, User=User, Role=Role)
+    return dict( app=app, db=db, Song=Song, Artist=Artist)
 # Add function use to manager
 manager.add_command("shell", Shell(make_context=make_shell_context))
 
@@ -66,11 +66,10 @@ class Artist(db.Model):
         return "{} (ID: {})".format(self.name,self.id)
 
 
-
 class Song(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64),unique=True) # Only unique title songs
-    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id')) # changed
+    artist_id = db.Column(db.Integer, db.ForeignKey(Artist.id)) # changed
     genre = db.Column(db.String(64))
 
     def __repr__(self):
