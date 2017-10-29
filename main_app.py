@@ -14,11 +14,10 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
 from flask_sqlalchemy import SQLAlchemy
-
 # from flask_sqlalchemy import Table, Column, Integer, ForeignKey, String, DateTime, Date, Time
 # from flask_sqlalchemy import relationship, backref
 
-# from flask_migrate import Migrate, MigrateCommand # Later
+from flask.ext.migrate import Migrate, MigrateCommand # needs: pip/pip3 install flask_migrate
 
 # Configure base directory of app
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -36,7 +35,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 manager = Manager(app)
 # moment = Moment(app) # For time # Later
 db = SQLAlchemy(app) # For database use
-# migrate = Migrate(app, db) # For database use # later
+migrate = Migrate(app, db) # For database use/updating
+manager.add_command('db', MigrateCommand) # Add migrate command to manager
 
 ## Set up Shell context so it's easy to use the shell to debug
 # Define function
@@ -45,6 +45,11 @@ def make_shell_context():
 # Add function use to manager
 manager.add_command("shell", Shell(make_context=make_shell_context))
 
+## You will get the following message when running command to create migration folder:
+## python main_app.py db init
+## -->
+# Please edit configuration/connection/logging settings in ' ... migrations/alembic.ini' before proceeding
+## This is what you are supposed to see!
 
 #########
 ######### Everything above this line is important/useful setup, not problem-solving.
@@ -52,14 +57,26 @@ manager.add_command("shell", Shell(make_context=make_shell_context))
 
 ##### Set up Models #####
 
+class Artist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64))
+    songs = db.relationship('Song',backref='Artist')
+
+    def __repr__(self):
+        return "{} (ID: {})".format(self.name,self.id)
+
+
+
 class Song(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64),unique=True) # Only unique title songs
-    artist = db.Column(db.String(64))
+    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id')) # changed
     genre = db.Column(db.String(64))
 
     def __repr__(self):
         return "{} by {} | {}".format(self.title,self.artist, self.genre)
+
+
 
 ##### Set up Forms #####
 
