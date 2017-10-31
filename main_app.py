@@ -59,9 +59,10 @@ manager.add_command("shell", Shell(make_context=make_shell_context))
 ##### Set up Models #####
 
 # Set up association Table
-collections = db.Table('collections',db.Column('album_id',db.Integer, db.ForeignKey('Album.id')),db.Column('artist_id',db.Integer, db.ForeignKey('Artist.id')))
+collections = db.Table('collections',db.Column('album_id',db.Integer, db.ForeignKey('albums.id')),db.Column('artist_id',db.Integer, db.ForeignKey('artists.id')))
 
 class Album(db.Model):
+    __tablename__ = "albums"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
     artists = db.relationship('Artist',secondary=collections,backref=db.backref('albums',lazy='dynamic'),lazy='dynamic')
