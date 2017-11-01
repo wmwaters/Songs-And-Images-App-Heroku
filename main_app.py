@@ -163,7 +163,7 @@ def index():
     num_songs = len(songs)
     form = SongForm()
     if form.validate_on_submit():
-        if db.session.query(Song).filter_by(title=form.song.data).first(): # If there's already a song with that title, though...nvm. Gotta add something like "(covered by..)"
+        if db.session.query(Song).filter_by(title=form.song.data).first(): # If there's already a song with that title, though...nvm, can't. Gotta add something like "(covered by..) or whatever"
             flash("You've already saved a song with that title!")
         get_or_create_song(db.session,form.song.data, form.artist.data, form.album.data, form.genre.data)
         return redirect(url_for('see_all'))
@@ -183,6 +183,36 @@ def see_all_artists():
     artists = Artist.query.all()
     names = [(a.name, len(Song.query.filter_by(artist_id=a.id).all())) for a in artists]
     return render_template('all_artists.html',artist_names=names)
+
+@app.route('/group1')
+def group1():
+    all_albums = Album.query.all()
+    return render_template('all_albums.html',albums=all_albums)
+
+@app.route('/group2')
+def group2():
+    songs_Rock = Songs.query.filter_by(genre="Rock")
+    return render_template('rock_songs.html',rock_songs=songs_Rock)
+
+@app.route('/group3')
+def group3():
+    artists_albums = []
+    for al in Album.query.all():
+        for artist in al.artists:
+            artists_albums.append(al.name, artist.name)
+    return render_template('artist_albums.html',artists_and_albums=artists_albums)
+
+@app.route('/group4')
+def group4():
+    songs_shakira = Song.query.filter_by(artist_id=get_or_create_artist("Shakira").id)
+    names = [s.name for s in songs_shakira]
+    return render_template('shakira_songs.html',song_names=names)
+
+@app.route('/group5')
+def group5():
+    artist_beethoven = Artist.query.filter_by(name="Beethoven") # If there's no such artist, what's gonna happen? Try and find out! -- What might you want to change in the template to handle different situations?
+    songs_beethoven = Song.query.filter_by(artist_id=artist_beethoven.id)
+    return render_template('beethoven_songs.html',songs_beethoven=songs_beethoven)
 
 if __name__ == '__main__':
     db.create_all()
