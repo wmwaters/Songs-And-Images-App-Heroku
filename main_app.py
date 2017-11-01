@@ -58,15 +58,16 @@ manager.add_command("shell", Shell(make_context=make_shell_context))
 
 ##### Set up Models #####
 
-# Set up association Table
+# Set up association Table between artists and albums
 collections = db.Table('collections',db.Column('album_id',db.Integer, db.ForeignKey('albums.id')),db.Column('artist_id',db.Integer, db.ForeignKey('artists.id')))
 
 class Album(db.Model):
     __tablename__ = "albums"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
-    label = db.Column(db.String(64))
     artists = db.relationship('Artist',secondary=collections,backref=db.backref('albums',lazy='dynamic'),lazy='dynamic')
+    songs = db.relationship('Song',backref='Album')
+
 
 class Artist(db.Model):
     __tablename__ = "artists"
@@ -80,7 +81,8 @@ class Artist(db.Model):
 class Song(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64),unique=True) # Only unique title songs
-    artist_id = db.Column(db.Integer, db.ForeignKey("artists.id")) # changed
+    album_id = db.Column(db.Integer, db.ForeignKey("albums.id"))
+    artist_id = db.Column(db.Integer, db.ForeignKey("artists.id"))
     genre = db.Column(db.String(64))
 
     def __repr__(self):
@@ -94,6 +96,8 @@ class SongForm(FlaskForm):
     song = StringField("What is the title of your favorite song?", validators=[Required()])
     artist = StringField("What is the name of the artist who performs it?",validators=[Required()])
     genre = StringField("What is the genre of that song?", validators
+        =[Required()])
+    album = StringField("What is the album this song is on?", validators
         =[Required()])
     submit = SubmitField('Submit')
 
@@ -112,14 +116,25 @@ def get_or_create_artist(db_session,artist_name):
         return artist
 
 def get_or_create_album(db_session, album_name, artists_list=[]):
-    pass # TODO decide how this should be added in the form
+    album = db_session.query(Album).filter_by(name=album_name).first() # by name filtering for album
+    if album:
+        return album
+    else:
+        album = Album(name=album_name)
+        for artist in artists_list:
+            artist = get_or_create_artist(db_session,artist)
+            album.artists.append(artist)
+        db_session.add(album)
+        db_session.commit()
+    return album
 
-def get_or_create_song(db_session, song_title, song_artist, song_genre):
+def get_or_create_song(db_session, song_title, song_artist, song_album, song_genre):
     song = db_session.query(Song).filter_by(title=song_title).first()
     if song:
         return song
     else:
         artist = get_or_create_artist(db_session, song_artist)
+        album = get_or_create_album(db_session, song_album, artists_list=[song_artist]) # list of one song artist each time -- check out get_or_create_album and get_or_create_artist!
         song = Song(title=song_title,genre=song_genre,artist_id=artist.id)
         db_session.add(song)
         db_session.commit()
@@ -148,9 +163,9 @@ def index():
     num_songs = len(songs)
     form = SongForm()
     if form.validate_on_submit():
-        if db.session.query(Song).filter_by(title=form.song.data).first(): # If there's already a song with that title, though...
+        if db.session.query(Song).filter_by(title=form.song.data).first(): # If there's already a song with that title, though...nvm. Gotta add something like "(covered by..)"
             flash("You've already saved a song with that title!")
-        get_or_create_song(db.session,form.song.data, form.artist.data, form.genre.data)
+        get_or_create_song(db.session,form.song.data, form.artist.data, form.album.data, form.genre.data)
         return redirect(url_for('see_all'))
     return render_template('index.html', form=form,num_songs=num_songs)
 
