@@ -65,6 +65,7 @@ class Album(db.Model):
     __tablename__ = "albums"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
+    label = db.Column(db.String(64))
     artists = db.relationship('Artist',secondary=collections,backref=db.backref('albums',lazy='dynamic'),lazy='dynamic')
 
 class Artist(db.Model):
@@ -109,6 +110,9 @@ def get_or_create_artist(db_session,artist_name):
         db_session.add(artist)
         db_session.commit()
         return artist
+
+def get_or_create_album(db_session, album_name, artists_list=[]):
+    pass # TODO decide how this should be added in the form
 
 def get_or_create_song(db_session, song_title, song_artist, song_genre):
     song = db_session.query(Song).filter_by(title=song_title).first()
