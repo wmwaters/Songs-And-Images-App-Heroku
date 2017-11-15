@@ -252,7 +252,9 @@ def upload():
     form = UploadForm()
     if form.validate_on_submit():
         filename = secure_filename(form.file.data.filename)
-        form.file.data.save('static/imgs/' + filename)
+        form.file.data.save('static/imgs/' + filename) # Get file data due to the way the form specifies it -- FileField is special
+        # Then can save it wherever you direct it to be saved
+        # Can also save File Blobs to database --
         return redirect(url_for('upload'))
 
     return render_template('upload.html', form=form)
