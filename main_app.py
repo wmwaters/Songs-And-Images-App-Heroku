@@ -37,7 +37,7 @@ app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME') # TODO export to y
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_SUBJECT_PREFIX'] = '[Songs App]'
 app.config['MAIL_SENDER'] = 'Admin <>' # TODO fill in email
-app.config['ADMIN'] = os.environ.get('ADMIN')
+# app.config['ADMIN'] = os.environ.get('ADMIN')
 
 # Set up Flask debug stuff
 manager = Manager(app)
@@ -258,13 +258,22 @@ def upload():
         return redirect(url_for('upload'))
 
     return render_template('upload.html', form=form)
-
+# ...static/imgs/whatevername.jpg
+# .../static/imgs/yosemite.jpg
 @app.route('/viewimage')
 def random_image():
     names = os.listdir(os.path.join(app.static_folder, 'imgs'))
     img_url = url_for('static', filename=os.path.join('imgs', random.choice(names)))
     return render_template('random_image.html', img_url=img_url)
 
+@app.route('/all_images')
+def all_images():
+    names = os.listdir(os.path.join(app.static_folder, 'imgs'))
+    img_urls = []
+    for name in names:
+        img_url = url_for('static', filename=os.path.join('imgs', name))
+        img_urls.append(img_url)
+    return render_template('all_images.html',img_urls=img_urls)
 
 if __name__ == '__main__':
     db.create_all()
