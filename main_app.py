@@ -254,16 +254,19 @@ def upload():
     form = UploadForm()
     if form.validate_on_submit():
         filename = secure_filename(form.file.data.filename)
-        form.file.data.save('static/imgs/' + filename) # Get file data due to the way the form specifies it -- FileField is special
-        # Then can save it wherever you direct it to be saved
-        # Can also save File Blobs to database --
+        if app.config['HEROKU_ON'] == 1:
+            return "Trying to upload a file called {}".format(form.file.data.filename)
+        else:
+            form.file.data.save('static/imgs/' + filename) # Get file data due to the way the form specifies it -- FileField is special
+            # Then can save it wherever you direct it to be saved
+            # Can also save File Blobs to database --
         return redirect(url_for('upload'))
 
     return render_template('upload.html', form=form)
 # ...static/imgs/whatevername.jpg
 # .../static/imgs/yosemite.jpg
 @app.route('/viewimage')
-def random_image():
+def random_image(): # Uploaded 1, but more won't stay -- for now
     names = os.listdir(os.path.join(app.static_folder, 'imgs'))
     img_url = url_for('static', filename=os.path.join('imgs', random.choice(names)))
     return render_template('random_image.html', img_url=img_url)
