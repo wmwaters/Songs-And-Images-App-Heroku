@@ -1,4 +1,4 @@
-__author__ = "Jackie Cohen (jczetta)"
+#__author__ = "Jackie Cohen (jczetta)"
 # An application about recording favorite songs & info
 
 import os
