@@ -38,6 +38,7 @@ app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_SUBJECT_PREFIX'] = '[Songs App]'
 app.config['MAIL_SENDER'] = 'Admin <youremail@example.com>' # TODO fill in email
 app.config['ADMIN'] = os.environ.get('ADMIN') or "Admin <youremail@example.com>"
+app.config['HEROKU_ON'] = os.environ.get('HEROKU')
 
 
 # Set up Flask debug stuff
