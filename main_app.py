@@ -36,8 +36,9 @@ app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME') # TODO export to your environs -- may want a new account just for this. It's expecting gmail, not umich
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_SUBJECT_PREFIX'] = '[Songs App]'
-app.config['MAIL_SENDER'] = 'Admin <>' # TODO fill in email
-# app.config['ADMIN'] = os.environ.get('ADMIN')
+app.config['MAIL_SENDER'] = 'Admin <youremail@example.com>' # TODO fill in email
+app.config['ADMIN'] = os.environ.get('ADMIN') or "Admin <youremail@example.com>"
+
 
 # Set up Flask debug stuff
 manager = Manager(app)
